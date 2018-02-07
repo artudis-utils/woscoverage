@@ -1,0 +1,2 @@
+sqlite3 -header -csv results.db "SELECT * FROM results LEFT JOIN (select issn, GROUP_CONCAT(DISTINCT name) from people_to_results group by issn) x ON x.issn = results.issn;" > out.csv
+

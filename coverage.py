@@ -114,7 +114,7 @@ def main(id, password, people, collections):
                 },
             }
             search = service_client.service.search(queryParameters=queryParameters, retrieveParameters=retrieveParameters)
-            find_issn(conn, search)
+            find_issn(conn, search, json_person)
 
             if search.recordsFound > 100:
 
@@ -135,7 +135,7 @@ def main(id, password, people, collections):
                     }
 
                     retrieve = service_client.service.retrieve(queryId=search.queryId, retrieveParameters=retrieveParameters)
-                    find_issn(conn, retrieve)
+                    find_issn(conn, retrieve, json_person)
                            
                     remaining = remaining - 100
 
@@ -145,7 +145,7 @@ def main(id, password, people, collections):
     print("Done!")
     conn.close()
 
-def find_issn(conn, request):
+def find_issn(conn, request, person):
     time.sleep(1)
     cur = conn.cursor()
     tree = lxml.etree.fromstring(request.records)
@@ -164,6 +164,8 @@ def find_issn(conn, request):
                     cur.execute("UPDATE results SET in_wos = 'True' WHERE issn = ?", (issn,))
                 else:
                     cur.execute("INSERT INTO results VALUES(?, 'True', 'False', ?)", (issn, journalTitle))
+
+                cur.execute("INSERT INTO people_to_results VALUES(?, ?, ?)", (issn, str(person['__id__']), person['family_name']+", "+person['given_name']))
 
 if __name__ == "__main__":
     main()
